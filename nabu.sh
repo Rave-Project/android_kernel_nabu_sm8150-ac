@@ -63,7 +63,7 @@ fi
 
 # Kernel-SU add
 
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+#curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 
 # Build the kernel
 echo "**** Kernel defconfig is set to $KERNEL_DEFCONFIG ****"
