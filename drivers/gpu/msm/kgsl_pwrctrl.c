@@ -36,6 +36,8 @@
 #define KGSL_PWRFLAGS_IRQ_ON   3
 #define KGSL_PWRFLAGS_NAP_OFF  5
 
+#define IDLE_TIMEOUT_GPU	0
+
 #define UPDATE_BUSY_VAL		1000000
 
 /* Number of jiffies for a full thermal cycle */
@@ -931,6 +933,7 @@ static ssize_t kgsl_pwrctrl_gpuclk_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "%ld\n", kgsl_pwrctrl_active_freq(pwr));
 }
 
+#if IDLE_TIMEOUT_GPU
 static ssize_t __timer_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count,
 					enum kgsl_pwrctrl_timer_type timer)
@@ -964,12 +967,17 @@ static ssize_t __timer_store(struct device *dev, struct device_attribute *attr,
 
 	return count;
 }
+#endif
 
 static ssize_t kgsl_pwrctrl_idle_timer_store(struct device *dev,
 					struct device_attribute *attr,
 					const char *buf, size_t count)
 {
+#if IDLE_TIMEOUT_GPU
 	return __timer_store(dev, attr, buf, count, KGSL_PWR_IDLE_TIMER);
+#else
+	return count;
+#endif
 }
 
 static ssize_t kgsl_pwrctrl_idle_timer_show(struct device *dev,
