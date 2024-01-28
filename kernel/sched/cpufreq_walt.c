@@ -296,7 +296,6 @@ static unsigned int get_next_freq(struct waltgov_policy *wg_policy,
 
 static void  waltgov_get_util(unsigned long *util,struct waltgov_cpu *wg_cpu)
 {
-	struct rq *rq = cpu_rq(wg_cpu->cpu);
 	unsigned long max = arch_scale_cpu_capacity(NULL,wg_cpu->cpu);
 
 	wg_cpu->max = max;
