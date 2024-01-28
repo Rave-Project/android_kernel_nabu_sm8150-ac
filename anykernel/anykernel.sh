@@ -1,7 +1,7 @@
 # AnyKernel3 Ramdisk Mod Script
 # osm0sis @ xda-developers
 properties() { '
-kernel.string=REAL-KING KERNEL by ROHAIL(@Rohail33)--Telegram
+kernel.string=Rave Kernel by @Peppe289
 device.name1=nabu
 do.devicecheck=1
 do.modules=0

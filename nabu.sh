@@ -89,7 +89,7 @@ cd tmp
 7za a -mx9 tmp.zip *
 cd ..
 rm *.zip
-cp -fp tmp/tmp.zip RealKing-Nabu-${zip_name}-$TIME.zip
+cp -fp tmp/tmp.zip Rave-Nabu-${zip_name}-$TIME.zip
 rm -rf tmp
 echo $TIME
 
