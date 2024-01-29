@@ -911,7 +911,7 @@ static void waltgov_policy_free(struct waltgov_policy *wg_policy)
 static int waltgov_kthread_create(struct waltgov_policy *wg_policy)
 {
 	struct task_struct *thread;
-	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
+	struct sched_param param = { .sched_priority = 99 };
 	struct cpufreq_policy *policy = wg_policy->policy;
 	int ret;
 
@@ -929,7 +929,7 @@ static int waltgov_kthread_create(struct waltgov_policy *wg_policy)
 		return PTR_ERR(thread);
 	}
 
-	ret = sched_setscheduler_nocheck(thread, SCHED_FIFO, &param);
+	ret = sched_setscheduler_nocheck(thread, SCHED_RR, &param);
 	if (ret) {
 		kthread_stop(thread);
 		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
