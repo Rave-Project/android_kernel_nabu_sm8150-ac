@@ -348,6 +348,7 @@ static int max_extfrag_threshold = 1000;
 #endif
 
 static struct ctl_table kern_table[] = {
+#if 0
 	{
 		.procname	= "sched_child_runs_first",
 		.data		= &sysctl_sched_child_runs_first,
@@ -355,6 +356,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#endif
 #if defined(CONFIG_PREEMPT_TRACER) || defined(CONFIG_DEBUG_PREEMPT)
 	{
 		.procname       = "preemptoff_tracing_threshold_ns",
@@ -460,6 +462,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one_thousand,
 	},
+#if 0
 	{
 		.procname	= "sched_min_task_util_for_colocation",
 		.data		= &sysctl_sched_min_task_util_for_colocation,
@@ -469,6 +472,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one_thousand,
 	},
+#endif
 	{
 		.procname	= "sched_little_cluster_coloc_fmin_khz",
 		.data		= &sysctl_sched_little_cluster_coloc_fmin_khz,
@@ -503,6 +507,7 @@ static struct ctl_table kern_table[] = {
 		.extra2         = &one,
 	},
 #ifdef CONFIG_SCHED_DEBUG
+#if 0
 	{
 		.procname	= "sched_min_granularity_ns",
 		.data		= &sysctl_sched_min_granularity,
@@ -521,6 +526,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &min_sched_granularity_ns,
 		.extra2		= &max_sched_granularity_ns,
 	},
+#endif
 	{
 		.procname	= "sched_sync_hint_enable",
 		.data		= &sysctl_sched_sync_hint_enable,
@@ -535,6 +541,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#if 0
 	{
 		.procname	= "sched_wakeup_granularity_ns",
 		.data		= &sysctl_sched_wakeup_granularity,
@@ -544,7 +551,9 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &min_wakeup_granularity_ns,
 		.extra2		= &max_wakeup_granularity_ns,
 	},
+#endif
 #ifdef CONFIG_SMP
+#if 0
 	{
 		.procname	= "sched_tunable_scaling",
 		.data		= &sysctl_sched_tunable_scaling,
@@ -568,6 +577,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#endif
 	{
 		.procname	= "sched_time_avg_ms",
 		.data		= &sysctl_sched_time_avg,
@@ -577,6 +587,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &one,
 	},
 #ifdef CONFIG_SCHEDSTATS
+#if 0
 	{
 		.procname	= "sched_schedstats",
 		.data		= NULL,
@@ -586,6 +597,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one,
 	},
+#endif
 #endif /* CONFIG_SCHEDSTATS */
 #endif /* CONFIG_SMP */
 #ifdef CONFIG_NUMA_BALANCING
@@ -651,6 +663,7 @@ static struct ctl_table kern_table[] = {
 		.proc_handler	= sched_rr_handler,
 	},
 #ifdef CONFIG_SCHED_AUTOGROUP
+#if 0
 	{
 		.procname	= "sched_autogroup_enabled",
 		.data		= &sysctl_sched_autogroup_enabled,
@@ -660,6 +673,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one,
 	},
+#endif
 #endif
 #ifdef CONFIG_CFS_BANDWIDTH
 	{
@@ -1389,6 +1403,7 @@ static struct ctl_table kern_table[] = {
 		.proc_handler	= perf_proc_update_handler,
 		.extra1		= &one,
 	},
+#if 0
 	{
 		.procname	= "perf_cpu_time_max_percent",
 		.data		= &sysctl_perf_cpu_time_max_percent,
@@ -1398,6 +1413,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one_hundred,
 	},
+#endif
 	{
 		.procname	= "perf_event_max_stack",
 		.data		= &sysctl_perf_event_max_stack,
@@ -1533,6 +1549,7 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= overcommit_kbytes_handler,
 	},
+#if 0
 	{
 		.procname	= "page-cluster", 
 		.data		= &page_cluster,
@@ -1550,6 +1567,7 @@ static struct ctl_table vm_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one_hundred,
 	},
+#endif
 	{
 		.procname	= "dirty_background_bytes",
 		.data		= &dirty_background_bytes,
@@ -1558,6 +1576,7 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= dirty_background_bytes_handler,
 		.extra1		= &one_ul,
 	},
+#if 0
 	{
 		.procname	= "dirty_ratio",
 		.data		= &vm_dirty_ratio,
@@ -1567,6 +1586,7 @@ static struct ctl_table vm_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one_hundred,
 	},
+#endif
 	{
 		.procname	= "dirty_bytes",
 		.data		= &vm_dirty_bytes,
@@ -1575,6 +1595,7 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= dirty_bytes_handler,
 		.extra1		= &dirty_bytes_min,
 	},
+#if 0
 	{
 		.procname	= "dirty_writeback_centisecs",
 		.data		= &dirty_writeback_interval,
@@ -1590,6 +1611,7 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= &zero,
 	},
+#endif
 	{
 		.procname	= "dirtytime_expire_seconds",
 		.data		= &dirtytime_expire_interval,
@@ -1603,6 +1625,7 @@ static struct ctl_table vm_table[] = {
 		.mode           = 0444 /* read-only */,
 		.proc_handler   = pdflush_proc_obsolete,
 	},
+#if 0
 	{
 		.procname	= "swappiness",
 		.data		= &vm_swappiness,
@@ -1612,6 +1635,7 @@ static struct ctl_table vm_table[] = {
 		.extra1		= &zero,
 		.extra2		= &one_hundred,
 	},
+#endif
 	{
 		.procname       = "want_old_faultaround_pte",
 		.data           = &want_old_faultaround_pte,
@@ -1771,6 +1795,7 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= proc_dointvec,
 		.extra1		= &zero,
 	},
+#if 0
 	{
 		.procname	= "vfs_cache_pressure",
 		.data		= &sysctl_vfs_cache_pressure,
@@ -1779,6 +1804,7 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= proc_dointvec,
 		.extra1		= &zero,
 	},
+#endif
 #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
 	{
 		.procname	= "legacy_va_layout",
@@ -1818,6 +1844,7 @@ static struct ctl_table vm_table[] = {
 	},
 #endif
 #ifdef CONFIG_SMP
+#if 0
 	{
 		.procname	= "stat_interval",
 		.data		= &sysctl_stat_interval,
@@ -1825,6 +1852,7 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_jiffies,
 	},
+#endif
 	{
 		.procname	= "stat_refresh",
 		.data		= NULL,
