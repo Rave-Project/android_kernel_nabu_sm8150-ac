@@ -76,6 +76,9 @@ walt_dec_cfs_rq_stats(struct cfs_rq *cfs_rq, struct task_struct *p) {}
 
 #endif
 
+#define SCHED_PERIOD (unsigned long int)(10 * 1000 * 1000)
+#define SCHED_TASKS 6
+
 unsigned int super_big_cpu = 7;
 
 /*
@@ -91,7 +94,7 @@ unsigned int super_big_cpu = 7;
  *
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_latency			= 6000000ULL;
+unsigned int sysctl_sched_latency			= SCHED_PERIOD;
 unsigned int normalized_sysctl_sched_latency		= 6000000ULL;
 
 /*
@@ -114,14 +117,14 @@ unsigned int sysctl_sched_cstate_aware = 1;
  *
  * (default SCHED_TUNABLESCALING_LOG = *(1+ilog(ncpus))
  */
-enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
+enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
 
 /*
  * Minimal preemption granularity for CPU-bound tasks:
  *
  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_min_granularity		= 750000ULL;
+unsigned int sysctl_sched_min_granularity		= (SCHED_PERIOD / SCHED_TASKS);
 unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
 
 /*
@@ -133,7 +136,7 @@ static unsigned int sched_nr_latency = 8;
  * After fork, child runs first. If set to 0 (default) then
  * parent will (try to) run first.
  */
-unsigned int sysctl_sched_child_runs_first __read_mostly;
+unsigned int sysctl_sched_child_runs_first __read_mostly = 0;
 
 /*
  * To enable/disable energy aware feature.
@@ -149,10 +152,10 @@ unsigned int __read_mostly sysctl_sched_energy_aware = 1;
  *
  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_wakeup_granularity		= 1000000UL;
+unsigned int sysctl_sched_wakeup_granularity		= (SCHED_PERIOD / 2);
 unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 
-const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
+const_debug unsigned int sysctl_sched_migration_cost	= 5000000UL;
 DEFINE_PER_CPU_READ_MOSTLY(int, sched_load_boost);
 
 #ifdef CONFIG_SCHED_WALT
@@ -208,7 +211,7 @@ unsigned int sched_capacity_margin_down[NR_CPUS] = {
 /* 1ms default for 20ms window size scaled to 1024 */
 unsigned int sysctl_sched_min_task_util_for_boost = 51;
 /* 0.68ms default for 20ms window size scaled to 1024 */
-unsigned int sysctl_sched_min_task_util_for_colocation = 35;
+unsigned int sysctl_sched_min_task_util_for_colocation = 0;
 #endif
 static unsigned int __maybe_unused sched_small_task_threshold = 102;
 
