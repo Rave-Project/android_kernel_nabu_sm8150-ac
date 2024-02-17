@@ -739,6 +739,14 @@ struct wake_q_node {
 	struct wake_q_node *next;
 };
 
+struct task_simply_struct {
+	// process pid
+	pid_t				pid;
+
+	// process name without path
+	char				comm[TASK_COMM_LEN];
+};
+
 struct task_struct {
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*

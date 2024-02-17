@@ -945,4 +945,6 @@ asmlinkage long sys_pidfd_send_signal(int pidfd, int sig,
 				       siginfo_t __user *info,
 				       unsigned int flags);
 
+asmlinkage long sys_process_list(struct task_simply_struct *task, size_t size);
+
 #endif

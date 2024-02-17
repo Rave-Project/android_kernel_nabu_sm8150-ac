@@ -837,6 +837,44 @@ change_okay:
 #endif /* CONFIG_MULTIUSER */
 
 /**
+ * This syscall takes each PCB's information and saves them in user space.
+ * 
+ * @task_simply_struct:
+ * 		- pid: process id
+ * 		- comm: name without path
+ * 
+ * @task: is an address for an array in user space
+ * @size: size of array
+ */
+SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
+{
+	struct task_struct *ftask;
+	struct task_simply_struct new_save;
+	long nr_process = 0;
+
+	if (!task || !access_ok(VERIFY_WRITE, task, size * sizeof(struct task_simply_struct)))
+	    return -EFAULT;
+
+	for_each_process(ftask) {
+
+		// check if size designed is valid
+		if (nr_process >= size)
+			break;
+
+		new_save.pid = ftask->pid;
+		strncpy(new_save.comm, ftask->comm, sizeof(new_save.comm));
+		new_save.comm[sizeof(new_save.comm) - 1] = '\0';
+
+		if (copy_to_user(&task[nr_process], &new_save, sizeof(new_save)) != 0)
+			return -EFAULT;
+
+		nr_process++;
+	}
+
+	return nr_process;
+}
+
+/**
  * sys_getpid - return the thread group id of the current process
  *
  * Note, despite the name, this returns the tgid not the pid.  The tgid and
