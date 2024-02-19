@@ -67,7 +67,7 @@ echo -e "$blue***********************************************"
 echo "          BUILDING KERNEL          "
 echo -e "***********************************************$nocol"
 make $KERNEL_DEFCONFIG O=out CC=clang
-make -j$(nproc --all) O=out \
+make -j$(expr $(nproc --all) / 2) O=out \
                       CC=clang \
                       ARCH=arm64 \
                       CROSS_COMPILE=aarch64-linux-gnu- \
