@@ -106,7 +106,7 @@ extern const uint16_t gesture_key_array[];
 #define DEFAULT_MP_UPDATE_FIRMWARE_NAME   "novatek_ts_mp.bin"
 #define DEFAULT_DEBUG_FW_NAME "novatek_debug_fw.bin"
 #define DEFAULT_DEBUG_MP_NAME "novatek_debug_mp.bin"
-#define POINT_DATA_CHECKSUM 1
+#define POINT_DATA_CHECKSUM 0
 #define POINT_DATA_CHECKSUM_LEN 65
 #define CHECK_PEN_DATA_CHECKSUM 0
 
