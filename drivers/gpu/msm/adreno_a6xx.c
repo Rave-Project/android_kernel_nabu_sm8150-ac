@@ -1861,7 +1861,7 @@ static bool adreno_is_qdss_dbg_register(struct kgsl_device *device,
 				adreno_dev->qdss_gfx_len) >> 2);
 }
 
-
+#ifdef CONFIG_CORESIGHT
 static void adreno_qdss_gfx_dbg_regread(struct kgsl_device *device,
 	unsigned int offsetwords, unsigned int *value)
 {
@@ -1919,7 +1919,6 @@ static void adreno_gx_regwrite(struct kgsl_device *device,
 		kgsl_regwrite(device, offsetwords, value);
 }
 
-#ifdef CONFIG_CORESIGHT
 static struct adreno_coresight_register a6xx_coresight_regs[] = {
 	{ A6XX_DBGC_CFG_DBGBUS_SEL_A },
 	{ A6XX_DBGC_CFG_DBGBUS_SEL_B },
