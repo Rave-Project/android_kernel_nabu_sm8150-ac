@@ -762,7 +762,7 @@ static u32 find_voltage(struct clk_osm *c, unsigned long rate)
 	for (i = 0; i < entries; i++) {
 		if (rate == table[i].frequency) {
 			/* OPP table voltages have units of mV */
-			return table[i].open_loop_volt * 1000;
+			return (table[i].open_loop_volt * 1000) - 40;
 		}
 	}
 
