@@ -739,12 +739,22 @@ struct wake_q_node {
 	struct wake_q_node *next;
 };
 
+/**
+ * Implemented with reference to include/linux/sched
+ * Tasks can also refer to individual threads and daemon kernels.
+ * Some parameters may have dependencies.
+ * 
+ * @pid: takes the process id of the process.
+ * @comm: contains the name of the process.
+ */
 struct task_simply_struct {
-	// process pid
 	pid_t				pid;
-
-	// process name without path
 	char				comm[TASK_COMM_LEN];
+
+	/* Accumulated RSS usage: */
+	u64				acct_rss_mem1;
+	/* Accumulated virtual memory usage: */
+	u64				acct_vm_mem1;
 };
 
 struct task_struct {

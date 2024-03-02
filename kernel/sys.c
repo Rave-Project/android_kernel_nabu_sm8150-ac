@@ -842,6 +842,7 @@ change_okay:
  * @task_simply_struct:
  * 		- pid: process id
  * 		- comm: name without path
+ *		- RSS end virtual size
  * 
  * @task: is an address for an array in user space
  * @size: size of array
@@ -864,6 +865,13 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 		new_save.pid = ftask->pid;
 		strncpy(new_save.comm, ftask->comm, sizeof(new_save.comm));
 		new_save.comm[sizeof(new_save.comm) - 1] = '\0';
+#ifdef CONFIG_TASK_XACCT
+		new_save.acct_rss_mem1 = ftask->acct_rss_mem1;
+		new_save.acct_vm_mem1 = ftask->acct_vm_mem1;
+#else
+		new_save.acct_rss_mem1 = 0;
+		new_save.acct_vm_mem1 = 0;
+#endif
 
 		if (copy_to_user(&task[nr_process], &new_save, sizeof(new_save)) != 0)
 			return -EFAULT;
