@@ -855,7 +855,6 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 	struct mm_struct *mm;
 	char *pathname;
 	char *tmp;
-	int len;
 
 	if (!task || !access_ok(VERIFY_WRITE, task, size * sizeof(struct task_simply_struct)))
 	    return -EFAULT;
@@ -873,9 +872,7 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 		tmp = (char *)__get_free_page(GFP_KERNEL);
 		if (mm && mm->exe_file) {
 			pathname = d_path(&mm->exe_file->f_path, tmp, PAGE_SIZE);
-			len = PTR_ERR(pathname);
 			if (!IS_ERR(pathname)) {
-				len = tmp + PAGE_SIZE - 1 - pathname;
 				strncpy(new_save.name, pathname, sizeof(new_save.name));
 				// just for safe work
 				new_save.name[sizeof(new_save.name) - 1] = '\0';
