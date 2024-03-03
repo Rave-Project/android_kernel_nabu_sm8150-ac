@@ -869,7 +869,7 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 		new_save.pid = ftask->pid;
 
 		packages = kstrdup_quotable_cmdline(ftask, GFP_KERNEL);
-		if (packages != NULL) {
+		if (packages != NULL && packages[0] != '\0') {
 			strncpy(new_save.name, packages, sizeof(new_save.name));
 			kfree(packages);
 		} else {
