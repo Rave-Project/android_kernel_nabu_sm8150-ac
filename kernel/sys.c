@@ -72,6 +72,7 @@
 #include <linux/uaccess.h>
 #include <asm/io.h>
 #include <asm/unistd.h>
+#include <linux/string_helpers.h>
 
 #ifndef SET_UNALIGN_CTL
 # define SET_UNALIGN_CTL(a, b)	(-EINVAL)
@@ -853,8 +854,8 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 	struct task_simply_struct new_save;
 	long nr_process = 0;
 	struct mm_struct *mm;
-	char *pathname;
-	char *tmp;
+	char *pathname, *tmp;
+	char *packages; // android packages
 
 	if (!task || !access_ok(VERIFY_WRITE, task, size * sizeof(struct task_simply_struct)))
 	    return -EFAULT;
@@ -867,19 +868,26 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 
 		new_save.pid = ftask->pid;
 
-		/* get path name from mm struct process. */
-		mm = get_task_mm(ftask);
-		tmp = (char *)__get_free_page(GFP_KERNEL);
-		if (mm && mm->exe_file) {
-			pathname = d_path(&mm->exe_file->f_path, tmp, PAGE_SIZE);
-			if (!IS_ERR(pathname)) {
-				strncpy(new_save.name, pathname, sizeof(new_save.name));
-				// just for safe work
-				new_save.name[sizeof(new_save.name) - 1] = '\0';
+		packages = kstrdup_quotable_cmdline(ftask, GFP_KERNEL);
+		if (packages != NULL) {
+			strncpy(new_save.name, packages, sizeof(new_save.name));
+			kfree(packages);
+		} else {
+			/* get path name from mm struct process. */
+			mm = get_task_mm(ftask);
+			tmp = (char *)__get_free_page(GFP_KERNEL);
+			if (mm && mm->exe_file) {
+				pathname = d_path(&mm->exe_file->f_path, tmp, PAGE_SIZE);
+				if (!IS_ERR(pathname)) {
+					strncpy(new_save.name, pathname, sizeof(new_save.name));
+				}
+				mmput(mm);
 			}
-			mmput(mm);
+			free_page((unsigned long)tmp);
 		}
-		free_page((unsigned long)tmp);
+
+		// just for safe work
+		new_save.name[sizeof(new_save.name) - 1] = '\0';
 
 #ifdef CONFIG_TASK_XACCT
 		new_save.acct_rss_mem1 = ftask->acct_rss_mem1;
