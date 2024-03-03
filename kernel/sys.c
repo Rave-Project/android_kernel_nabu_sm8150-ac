@@ -871,7 +871,6 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 		packages = kstrdup_quotable_cmdline(ftask, GFP_KERNEL);
 		if (packages != NULL && packages[0] != '\0') {
 			strncpy(new_save.name, packages, sizeof(new_save.name));
-			kfree(packages);
 		} else {
 			/* get path name from mm struct process. */
 			mm = get_task_mm(ftask);
@@ -885,6 +884,9 @@ SYSCALL_DEFINE2(process_list, struct task_simply_struct *, task, size_t, size)
 			}
 			free_page((unsigned long)tmp);
 		}
+
+		if (packages != NULL)
+			kfree(packages);
 
 		// just for safe work
 		new_save.name[sizeof(new_save.name) - 1] = '\0';
