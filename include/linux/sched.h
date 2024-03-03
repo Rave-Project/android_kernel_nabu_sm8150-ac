@@ -745,11 +745,11 @@ struct wake_q_node {
  * Some parameters may have dependencies.
  * 
  * @pid: takes the process id of the process.
- * @comm: contains the name of the process.
+ * @name: contains the full path (with name) of the process.
  */
 struct task_simply_struct {
 	pid_t				pid;
-	char				comm[TASK_COMM_LEN];
+	char				name[255];
 
 	/* Accumulated RSS usage: */
 	u64				acct_rss_mem1;
