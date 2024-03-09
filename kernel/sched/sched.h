@@ -2064,7 +2064,6 @@ static inline unsigned long cpu_util(int cpu)
 }
 
 struct sched_walt_cpu_load {
-	unsigned long prev_window_util;
 	unsigned long nl;
 	unsigned long pl;
 	bool rtgb_active;
@@ -2122,9 +2121,6 @@ cpu_util_freq_walt(int cpu, struct sched_walt_cpu_load *walt_load)
 #endif
 	util_unboosted = util = freq_policy_load(rq);
 
-	util = div64_u64(util * (100 + boost),
-			walt_cpu_util_freq_divisor);
-
 	if (walt_load) {
 		u64 nl = cpu_rq(cpu)->nt_prev_runnable_sum +
 				rq->grp_time.nt_prev_runnable_sum;
@@ -2138,7 +2134,6 @@ cpu_util_freq_walt(int cpu, struct sched_walt_cpu_load *walt_load)
 		nl = div64_u64(nl * (100 + boost),
 		walt_cpu_util_freq_divisor);
 
-		walt_load->prev_window_util = util;
 		walt_load->nl = nl;
 		walt_load->pl = pl;
 		walt_load->ws = walt_load_reported_window;
