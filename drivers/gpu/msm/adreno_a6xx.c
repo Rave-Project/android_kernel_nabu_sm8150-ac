@@ -1850,6 +1850,7 @@ static struct adreno_irq a6xx_irq = {
 	.mask = A6XX_INT_MASK,
 };
 
+#ifdef CONFIG_CORESIGHT
 static bool adreno_is_qdss_dbg_register(struct kgsl_device *device,
 		unsigned int offsetwords)
 {
@@ -1861,7 +1862,6 @@ static bool adreno_is_qdss_dbg_register(struct kgsl_device *device,
 				adreno_dev->qdss_gfx_len) >> 2);
 }
 
-#ifdef CONFIG_CORESIGHT
 static void adreno_qdss_gfx_dbg_regread(struct kgsl_device *device,
 	unsigned int offsetwords, unsigned int *value)
 {
