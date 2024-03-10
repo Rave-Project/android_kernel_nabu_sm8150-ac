@@ -1005,7 +1005,8 @@
 		<  768000 MHZ_TO_MBPS( 451, 4) >,
 		< 1113600 MHZ_TO_MBPS( 547, 4) >,
 		< 1478400 MHZ_TO_MBPS( 768, 4) >,
-		< 1632000 MHZ_TO_MBPS(1017, 4) >;
+		< 1632000 MHZ_TO_MBPS(1017, 4) >,
+		< 1785600 MHZ_TO_MBPS(1353, 4) >;
 };
 
 &cpu4_llcc_ddr_latmon {
