@@ -21,6 +21,7 @@
 #include <linux/io.h>
 #include <soc/qcom/scm.h>
 #include <soc/qcom/boot_stats.h>
+#include <linux/syscalls.h>
 
 #include <linux/msm-bus-board.h>
 #include <linux/msm-bus.h>
@@ -57,6 +58,14 @@ MODULE_PARM_DESC(nopreempt, "Disable GPU preemption");
 static bool swfdetect;
 module_param(swfdetect, bool, 0444);
 MODULE_PARM_DESC(swfdetect, "Enable soft fault detection");
+
+struct adreno_kgsl_einfo {
+	unsigned int pwrlevels_size;
+	struct kgsl_pwrlevel pwrlevels_info[KGSL_MAX_PWRLEVELS];
+	struct kgsl_device *dev;
+};
+
+static struct adreno_kgsl_einfo adreno_info;
 
 #define DRIVER_VERSION_MAJOR   3
 #define DRIVER_VERSION_MINOR   1
@@ -932,7 +941,11 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 	struct device_node *child;
+	struct kgsl_pwrlevel *pwrlevels_info = adreno_info.pwrlevels_info;
 	int ret;
+	int *index_info = &adreno_info.pwrlevels_size;
+
+	*index_info = 0;
 
 	/* ADD the GPU OPP table if we define it */
 	if (of_find_property(device->pdev->dev.of_node,
@@ -980,7 +993,19 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 		if (of_property_read_u32(child, "qcom,bus-max",
 			&level->bus_max))
 			level->bus_max = level->bus_freq;
+
+		pwrlevels_info[(*index_info)].gpu_freq = level->gpu_freq;
+		pwrlevels_info[(*index_info)].bus_freq = level->bus_freq;
+		pwrlevels_info[(*index_info)].bus_min = level->bus_min;
+		pwrlevels_info[(*index_info)].bus_max = level->bus_max;
+
+		(*index_info)++;
 	}
+
+	pwrlevels_info[(*index_info)].gpu_freq = 0;
+	pwrlevels_info[(*index_info)].bus_freq = 0;
+	pwrlevels_info[(*index_info)].bus_min = 0;
+	pwrlevels_info[(*index_info)].bus_max = 0;
 
 	return 0;
 }
@@ -1682,11 +1707,95 @@ int adreno_clear_pending_transactions(struct kgsl_device *device)
 	return ret;
 }
 
+static int validate_adreno_freq(unsigned long freq, struct kgsl_pwrlevel *pwrlevels_info)
+{
+	int i = 0;
+
+	for (; i < adreno_info.pwrlevels_size; ++i) {
+		if (freq == pwrlevels_info[i].gpu_freq)
+			return 0;
+	}
+
+	return -EINVAL;
+}
+
+/**
+ * @freq: new frequency to set
+ * @freq_list: user space address for save and return list of available freq
+ * @flag:
+ * 		0 -> just get info
+ * 		> 0 -> change max freq using "freq"
+ * 		< 0 -> change min freq using "freq"
+ */
+static long int adreno_freq_entry(unsigned long freq, unsigned int *freq_list, int flag)
+{
+
+	int i, ret;
+	unsigned int list[KGSL_MAX_PWRLEVELS] = {0};
+	struct kgsl_device *dev = adreno_info.dev;
+	int level;
+	struct kgsl_pwrctrl *pwr = &dev->pwrctrl;
+
+	/**
+	 *  We cannot assign values ​​to a null pointer. check for it
+	 */
+	if (flag == 0 && freq_list == NULL)
+		return 0;
+
+	// just get info then return
+	if (!flag)
+	{
+		for (i = 0; i < adreno_info.pwrlevels_size; i++)
+		{
+			list[i] = adreno_info.pwrlevels_info[i].gpu_freq;
+			pr_info("%s: save %u in index %d", __func__, list[i], i);
+		}
+
+		copy_to_user(freq_list, &list, sizeof(unsigned int) * KGSL_MAX_PWRLEVELS);
+		return 0;
+	}
+
+	pr_info("Request change to %lu", freq);
+
+	if (freq == 0)
+		return flag > 0 ? kgsl_pwrctrl_max_clock_get(dev) : pwr->pwrlevels[pwr->min_pwrlevel].gpu_freq;
+
+	// prepare for change GPU freq
+	ret = validate_adreno_freq(freq, adreno_info.pwrlevels_info);
+	if (ret < 0)
+		return ret;
+
+	if (flag < 0)
+	{
+		// find min frequency using default adreno macro
+		for (level = -1, i = pwr->num_pwrlevels - 2; i >= 0; i--) {
+			if (abs(pwr->pwrlevels[i].gpu_freq - freq) < 5000000) {
+				level = i;
+				break;
+			}
+		}
+
+		if (level != -1)
+			kgsl_pwrctrl_min_pwrlevel_set(dev, level);
+	}
+	else
+		kgsl_pwrctrl_max_clock_set(dev, freq);
+
+	return 0;
+}
+
+SYSCALL_DEFINE3(adreno_freq, unsigned long, freq, unsigned int *, possible_freq, int, flag)
+{
+	return adreno_freq_entry(freq, possible_freq, flag);
+}
+
 static int adreno_init(struct kgsl_device *device)
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 	struct adreno_gpudev *gpudev = ADRENO_GPU_DEVICE(adreno_dev);
 	int ret;
+
+	adreno_info.dev = &adreno_dev->dev;
 
 	if (!adreno_is_a3xx(adreno_dev))
 		kgsl_sharedmem_set(device, &device->scratch, 0, 0,

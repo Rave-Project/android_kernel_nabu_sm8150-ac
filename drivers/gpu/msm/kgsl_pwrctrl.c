@@ -712,7 +712,7 @@ static ssize_t kgsl_pwrctrl_max_pwrlevel_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "%u\n", pwr->max_pwrlevel);
 }
 
-static void kgsl_pwrctrl_min_pwrlevel_set(struct kgsl_device *device,
+void kgsl_pwrctrl_min_pwrlevel_set(struct kgsl_device *device,
 					int level)
 {
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
@@ -794,7 +794,7 @@ static int _get_nearest_pwrlevel(struct kgsl_pwrctrl *pwr, unsigned int clock)
 	return -ERANGE;
 }
 
-static void kgsl_pwrctrl_max_clock_set(struct kgsl_device *device, int val)
+void kgsl_pwrctrl_max_clock_set(struct kgsl_device *device, int val)
 {
 	struct kgsl_pwrctrl *pwr;
 	int level;
@@ -861,7 +861,7 @@ static ssize_t kgsl_pwrctrl_max_gpuclk_store(struct device *dev,
 	return count;
 }
 
-static unsigned int kgsl_pwrctrl_max_clock_get(struct kgsl_device *device)
+unsigned int kgsl_pwrctrl_max_clock_get(struct kgsl_device *device)
 {
 	struct kgsl_pwrctrl *pwr;
 	unsigned int freq;

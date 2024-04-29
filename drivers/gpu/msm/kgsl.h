@@ -475,6 +475,11 @@ struct kgsl_mem_entry *gpumem_alloc_entry(struct kgsl_device_private *dev_priv,
 				uint64_t size, uint64_t flags);
 long gpumem_free_entry(struct kgsl_mem_entry *entry);
 
+void kgsl_pwrctrl_max_clock_set(struct kgsl_device *device, int val);
+void kgsl_pwrctrl_min_pwrlevel_set(struct kgsl_device *device,
+					int level);
+unsigned int kgsl_pwrctrl_max_clock_get(struct kgsl_device *device);
+
 static inline int kgsl_gpuaddr_in_memdesc(const struct kgsl_memdesc *memdesc,
 				uint64_t gpuaddr, uint64_t size)
 {

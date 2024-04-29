@@ -738,9 +738,11 @@ __SYSCALL(__NR_pidfd_send_signal, sys_pidfd_send_signal)
 __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
 #define __NR_process_list 445
 __SYSCALL(__NR_process_list, sys_process_list)
+#define __NR_adreno_freq 446
+__SYSCALL(__NR_adreno_freq, sys_adreno_freq)
 
 #undef __NR_syscalls
-#define __NR_syscalls 446
+#define __NR_syscalls 447
 
 /*
  * All syscalls below here should go away really,
