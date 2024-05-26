@@ -29,6 +29,7 @@
 #include <linux/sock_diag.h>
 #include <linux/in.h>
 #include <linux/inet.h>
+#include <net/inet_common.h>
 #include <linux/netdevice.h>
 #include <linux/if_packet.h>
 #include <linux/if_arp.h>
