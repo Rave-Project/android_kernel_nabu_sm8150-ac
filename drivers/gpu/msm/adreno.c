@@ -60,7 +60,6 @@ module_param(swfdetect, bool, 0444);
 MODULE_PARM_DESC(swfdetect, "Enable soft fault detection");
 
 struct adreno_kgsl_einfo {
-	unsigned int pwrlevels_size;
 	struct kgsl_device *dev;
 };
 
@@ -941,9 +940,6 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 	struct device_node *child;
 	int ret;
-	int *index_info = &adreno_info.pwrlevels_size;
-
-	*index_info = 0;
 
 	/* ADD the GPU OPP table if we define it */
 	if (of_find_property(device->pdev->dev.of_node,
@@ -991,22 +987,8 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 		if (of_property_read_u32(child, "qcom,bus-max",
 			&level->bus_max))
 			level->bus_max = level->bus_freq;
-
-		/*
-		pwrlevels_info[(*index_info)].gpu_freq = level->gpu_freq;
-		pwrlevels_info[(*index_info)].bus_freq = level->bus_freq;
-		pwrlevels_info[(*index_info)].bus_min = level->bus_min;
-		pwrlevels_info[(*index_info)].bus_max = level->bus_max;
-		*/
-		(*index_info)++;
-		
 	}
-	/*
-	pwrlevels_info[(*index_info)].gpu_freq = 0;
-	pwrlevels_info[(*index_info)].bus_freq = 0;
-	pwrlevels_info[(*index_info)].bus_min = 0;
-	pwrlevels_info[(*index_info)].bus_max = 0;
-	*/
+
 	return 0;
 }
 
@@ -1707,11 +1689,11 @@ int adreno_clear_pending_transactions(struct kgsl_device *device)
 	return ret;
 }
 
-static int validate_adreno_freq(unsigned long freq, struct kgsl_pwrlevel *pwrlevels_info)
+static int validate_adreno_freq(unsigned length, unsigned long freq, struct kgsl_pwrlevel *pwrlevels_info)
 {
 	int i = 0;
 
-	for (; i < adreno_info.pwrlevels_size; ++i) {
+	for (; i < length; ++i) {
 		if (freq == pwrlevels_info[i].gpu_freq)
 			return 0;
 	}
@@ -1720,14 +1702,25 @@ static int validate_adreno_freq(unsigned long freq, struct kgsl_pwrlevel *pwrlev
 }
 
 /**
- * @freq: new frequency to set
- * @freq_list: user space address for save and return list of available freq
- * @flag:
- * 		0 -> just get info
- * 		> 0 -> change max freq using "freq"
- * 		< 0 -> change min freq using "freq"
+ * adreno_freq_entry - A system call to retrieve or modify the GPU frequency for Adreno GPUs.
+ * @target_freq: The new frequency to set, if applicable.
+ * @user_freq_list: The user space address to save and return the list of available frequencies.
+ * @operation_flag:
+ *      0 -> Retrieve information only.
+ *      > 0 -> Change the maximum frequency using the value in @freq.
+ *      < 0 -> Change the minimum frequency using the value in @freq.
+ *
+ * This function allows user space programs to interact with the GPU frequency settings
+ * of Adreno GPUs without requiring root privileges. It can either return the list of
+ * available GPU frequencies or change the maximum or minimum frequency based on the
+ * provided parameters.
+ *
+ * If @target_freq is 0, the function will return the current maximum frequency if @operation_flag
+ * is greater than 0, or the current minimum frequency if @operation_flag is less than 0.
+ *
+ * Return: 0 on success, or a negative error code on failure.
  */
-static long int adreno_freq_entry(unsigned long freq, unsigned int *freq_list, int flag)
+static long int adreno_freq_entry(unsigned long target_freq, unsigned int *user_freq_list, int operation_flag)
 {
 
 	int i, ret;
@@ -1737,57 +1730,56 @@ static long int adreno_freq_entry(unsigned long freq, unsigned int *freq_list, i
 	struct kgsl_pwrctrl *pwr = &dev->pwrctrl;
 	struct kgsl_pwrlevel *pwrlevels_info = pwr->pwrlevels;
 
-	/**
-	 *  We cannot assign values ​​to a null pointer. check for it
-	 */
-	if (flag == 0 && freq_list == NULL)
+    /**
+     * Verify that freq_list is not NULL when the flag indicates that information should be retrieved.
+     * If the flag is 0 and freq_list is NULL, return immediately.
+     */
+	if (operation_flag == 0 && user_freq_list == NULL)
 		return 0;
 
-	// just get info then return
-	if (!flag)
+	// Retrieve and return GPU frequency information if flag is 0.
+    if (!operation_flag)
 	{
-		for (i = 0; i < adreno_info.pwrlevels_size; i++)
-		{
+		for (i = 0; i < pwr->num_pwrlevels && i < KGSL_MAX_PWRLEVELS; i++)
 			list[i] = pwrlevels_info[i].gpu_freq;
-			pr_info("%s: save %u in index %d", __func__, list[i], i);
-		}
 
-		copy_to_user(freq_list, &list, sizeof(unsigned int) * KGSL_MAX_PWRLEVELS);
-		return 0;
+		return copy_to_user(user_freq_list, &list, sizeof(unsigned int) * KGSL_MAX_PWRLEVELS) ? -EFAULT : 0;
 	}
 
-	pr_info("Request change to %lu", freq);
+	// If freq is 0, return the current maximum or minimum frequency based on the flag.
+    if (target_freq == 0)
+		return operation_flag > 0 ? kgsl_pwrctrl_max_clock_get(dev) : pwr->pwrlevels[pwr->min_pwrlevel].gpu_freq;
 
-	if (freq == 0)
-		return flag > 0 ? kgsl_pwrctrl_max_clock_get(dev) : pwr->pwrlevels[pwr->min_pwrlevel].gpu_freq;
-
-	// prepare for change GPU freq
-	ret = validate_adreno_freq(freq, pwrlevels_info);
+	// Validate the requested frequency before proceeding with the change.
+    ret = validate_adreno_freq(pwr->num_pwrlevels, target_freq, pwrlevels_info);
 	if (ret < 0)
 		return ret;
 
-	if (flag < 0)
+	if (operation_flag < 0)
 	{
-		// find min frequency using default adreno macro
-		for (level = -1, i = pwr->num_pwrlevels - 2; i >= 0; i--) {
-			if (abs(pwr->pwrlevels[i].gpu_freq - freq) < 5000000) {
+		// Determine the minimum frequency level that is close to the requested frequency.
+        for (level = -1, i = pwr->num_pwrlevels - 2; i >= 0; i--) {
+			if (abs(pwr->pwrlevels[i].gpu_freq - target_freq) < 5000000) {
 				level = i;
 				break;
 			}
 		}
 
+		// Set the minimum power level if a valid level is found.
 		if (level != -1)
 			kgsl_pwrctrl_min_pwrlevel_set(dev, level);
 	}
-	else
-		kgsl_pwrctrl_max_clock_set(dev, freq);
+	else {
+		// Set the maximum GPU clock frequency to the requested value.
+		kgsl_pwrctrl_max_clock_set(dev, target_freq);
+	}
 
 	return 0;
 }
 
-SYSCALL_DEFINE3(adreno_freq, unsigned long, freq, unsigned int *, possible_freq, int, flag)
+SYSCALL_DEFINE3(adreno_freq, unsigned long, target_freq, unsigned int *, user_freq_list, int, flag)
 {
-	return adreno_freq_entry(freq, possible_freq, flag);
+	return adreno_freq_entry(target_freq, user_freq_list, flag);
 }
 
 static int adreno_init(struct kgsl_device *device)
