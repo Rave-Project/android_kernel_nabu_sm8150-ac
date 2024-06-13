@@ -61,7 +61,6 @@ MODULE_PARM_DESC(swfdetect, "Enable soft fault detection");
 
 struct adreno_kgsl_einfo {
 	unsigned int pwrlevels_size;
-	struct kgsl_pwrlevel pwrlevels_info[KGSL_MAX_PWRLEVELS];
 	struct kgsl_device *dev;
 };
 
@@ -941,7 +940,6 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 	struct device_node *child;
-	struct kgsl_pwrlevel *pwrlevels_info = adreno_info.pwrlevels_info;
 	int ret;
 	int *index_info = &adreno_info.pwrlevels_size;
 
@@ -994,19 +992,21 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 			&level->bus_max))
 			level->bus_max = level->bus_freq;
 
+		/*
 		pwrlevels_info[(*index_info)].gpu_freq = level->gpu_freq;
 		pwrlevels_info[(*index_info)].bus_freq = level->bus_freq;
 		pwrlevels_info[(*index_info)].bus_min = level->bus_min;
 		pwrlevels_info[(*index_info)].bus_max = level->bus_max;
-
+		*/
 		(*index_info)++;
+		
 	}
-
+	/*
 	pwrlevels_info[(*index_info)].gpu_freq = 0;
 	pwrlevels_info[(*index_info)].bus_freq = 0;
 	pwrlevels_info[(*index_info)].bus_min = 0;
 	pwrlevels_info[(*index_info)].bus_max = 0;
-
+	*/
 	return 0;
 }
 
@@ -1735,6 +1735,7 @@ static long int adreno_freq_entry(unsigned long freq, unsigned int *freq_list, i
 	struct kgsl_device *dev = adreno_info.dev;
 	int level;
 	struct kgsl_pwrctrl *pwr = &dev->pwrctrl;
+	struct kgsl_pwrlevel *pwrlevels_info = pwr->pwrlevels;
 
 	/**
 	 *  We cannot assign values ​​to a null pointer. check for it
@@ -1747,7 +1748,7 @@ static long int adreno_freq_entry(unsigned long freq, unsigned int *freq_list, i
 	{
 		for (i = 0; i < adreno_info.pwrlevels_size; i++)
 		{
-			list[i] = adreno_info.pwrlevels_info[i].gpu_freq;
+			list[i] = pwrlevels_info[i].gpu_freq;
 			pr_info("%s: save %u in index %d", __func__, list[i], i);
 		}
 
@@ -1761,7 +1762,7 @@ static long int adreno_freq_entry(unsigned long freq, unsigned int *freq_list, i
 		return flag > 0 ? kgsl_pwrctrl_max_clock_get(dev) : pwr->pwrlevels[pwr->min_pwrlevel].gpu_freq;
 
 	// prepare for change GPU freq
-	ret = validate_adreno_freq(freq, adreno_info.pwrlevels_info);
+	ret = validate_adreno_freq(freq, pwrlevels_info);
 	if (ret < 0)
 		return ret;
 
