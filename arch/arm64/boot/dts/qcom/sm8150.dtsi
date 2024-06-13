@@ -551,7 +551,7 @@
 	};
 
 	chosen {
-		bootargs = "kpti=0 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 cgroup.memory=nokmem,nosocket noirqdebug";
+		bootargs = "kpti=0 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 cgroup.memory=nokmem,nosocket noirqdebug irqaffinity=0-7";
 	};
 
 	soc: soc { };
