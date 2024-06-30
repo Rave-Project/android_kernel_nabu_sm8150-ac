@@ -25,6 +25,16 @@
 #define JEITA_VOTER		"JEITA_VOTER"
 #define DYNAMIC_FV_VOTER	"DYNAMIC_FV_VOTER"
 
+#ifdef pr_info
+#undef pr_info
+#endif
+#define pr_info(...)
+
+#ifdef pr_err
+#undef pr_err
+#endif
+#define pr_err(...)
+
 #define is_between(left, right, value) \
 		(((left) >= (right) && (left) >= (value) \
 			&& (value) >= (right)) \
