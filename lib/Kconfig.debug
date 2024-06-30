@@ -717,7 +717,7 @@ config DEBUG_NOMMU_REGIONS
 
 config DEBUG_MEMORY_INIT
 	bool "Debug memory initialisation" if EXPERT
-	default !EXPERT
+	default n
 	help
 	  Enable this for additional checks during memory initialisation.
 	  The sanity checks verify aspects of the VM such as the memory model
