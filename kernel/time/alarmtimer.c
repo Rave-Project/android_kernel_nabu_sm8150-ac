@@ -16,7 +16,6 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-#define ENABLE_ALARMTIMER_RECORD
 #include <linux/time.h>
 #include <linux/hrtimer.h>
 #include <linux/timerqueue.h>
@@ -31,12 +30,13 @@
 #include <linux/freezer.h>
 #include <linux/compat.h>
 #include <linux/module.h>
-#ifdef ENABLE_ALARMTIMER_RECORD
+#include "posix-timers.h"
+
+#define ENABLE_ALARMTIMER_RECORD	0
+
+#if ENABLE_ALARMTIMER_RECORD
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
-
-
-#include "posix-timers.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/alarmtimer.h>
@@ -51,6 +51,11 @@ static struct alarmtimer_record_buff alarmtimer_set_record_buff[ALARMTIMER_RECOR
 static u32 alarmtimer_num = 0;
 static u32 index_head = 0;
 static u32 index_tail = 0;
+#else
+#define trace_alarmtimer_suspend(...)	0
+#define trace_alarmtimer_fired(...)		0
+#define trace_alarmtimer_start(...)		0
+#define trace_alarmtimer_cancel(...)	0
 #endif
 /**
  * struct alarm_base - Alarm timer bases
@@ -83,7 +88,7 @@ static struct rtc_device	*rtcdev;
 static DEFINE_SPINLOCK(rtcdev_lock);
 bool alarm_fired;
 
-#ifdef ENABLE_ALARMTIMER_RECORD
+#if ENABLE_ALARMTIMER_RECORD
 static void alarmtimer_collect(struct alarm *alarm)
 {
 	static int m = 0;
@@ -241,7 +246,7 @@ static void alarmtimer_enqueue(struct alarm_base *base, struct alarm *alarm)
 	if (alarm->state & ALARMTIMER_STATE_ENQUEUED)
 		timerqueue_del(&base->timerqueue, &alarm->node);
 
-#ifdef ENABLE_ALARMTIMER_RECORD
+#if ENABLE_ALARMTIMER_RECORD
 	alarmtimer_collect(alarm);
 #endif
 	timerqueue_add(&base->timerqueue, &alarm->node);
@@ -960,7 +965,7 @@ static struct platform_driver alarmtimer_driver = {
 		.pm = &alarmtimer_pm_ops,
 	}
 };
-#ifdef ENABLE_ALARMTIMER_RECORD
+#if ENABLE_ALARMTIMER_RECORD
 static int alarmtimer_seq_show(struct seq_file *seq, void *v)
 {
 	struct rtc_time tm;
@@ -1017,7 +1022,7 @@ static int __init alarmtimer_init(void)
 	struct platform_device *pdev;
 	int error = 0;
 	int i;
-	#ifdef ENABLE_ALARMTIMER_RECORD
+	#if ENABLE_ALARMTIMER_RECORD
 	struct proc_dir_entry *entry;
 	#endif
 
@@ -1047,7 +1052,7 @@ static int __init alarmtimer_init(void)
 		goto out_drv;
 	}
 	
-	#ifdef ENABLE_ALARMTIMER_RECORD
+	#if ENABLE_ALARMTIMER_RECORD
 	entry = proc_create("alarmtimer_records", 0, NULL, &alarmtimer_records_fileops);
 	if (!entry)
 		printk(KERN_ERR "kobject_uevent: unable to create uevents_records!\n");
