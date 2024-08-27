@@ -2299,13 +2299,15 @@ EXPORT_SYMBOL_GPL(usbnet_write_cmd_async);
 
 static int __init usbnet_init(void)
 {
-	int i = 0;
+	int __maybe_unused i = 0;
 
 	/* Compiler should optimize this out. */
 	BUILD_BUG_ON(
 		FIELD_SIZEOF(struct sk_buff, cb) < sizeof(struct skb_data));
 
 	eth_random_addr(node_id);
+
+#ifdef CONFIG_IPC_LOGGING
 	for (i = 0; i < NUM_USBNET_IDS; i++) {
 		usbnet_ipc_log_ctxt[i] =
 			ipc_log_context_create(IPC_LOG_NUM_PAGES,
@@ -2313,6 +2315,7 @@ static int __init usbnet_init(void)
 		if (!usbnet_ipc_log_ctxt[i])
 			pr_err("%s: Error getting ipc_log_ctxt\n", __func__);
 	}
+#endif
 
 	return 0;
 }

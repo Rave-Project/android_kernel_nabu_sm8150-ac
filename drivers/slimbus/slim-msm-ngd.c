@@ -1831,6 +1831,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, dev);
 	slim_set_ctrldata(&dev->ctrl, dev);
 
+#ifdef CONFIG_IPC_LOGGING
 	/* Create IPC log context */
 	dev->ipc_slimbus_log = ipc_log_context_create(IPC_SLIMBUS_LOG_PAGES,
 						dev_name(dev->dev), 0);
@@ -1843,11 +1844,13 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		SLIM_INFO(dev, "start logging for slim dev %s\n",
 				dev_name(dev->dev));
 	}
+#endif
 
 	/* Create Error IPC log context */
 	memset(ipc_err_log_name, 0, sizeof(ipc_err_log_name));
 	scnprintf(ipc_err_log_name, sizeof(ipc_err_log_name), "%s%s",
 						dev_name(dev->dev), "_err");
+#ifdef CONFIG_IPC_LOGGING
 	dev->ipc_slimbus_log_err =
 		ipc_log_context_create(IPC_SLIMBUS_LOG_PAGES,
 						ipc_err_log_name, 0);
@@ -1857,7 +1860,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 	else
 		SLIM_INFO(dev, "start error logging for slim dev %s\n",
 							ipc_err_log_name);
-
+#endif
 	ret = sysfs_create_file(&dev->dev->kobj, &dev_attr_debug_mask.attr);
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to create dev. attr\n");
